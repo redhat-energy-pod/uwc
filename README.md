@@ -1,4 +1,4 @@
-# Universal Wellpad Controller (UWC)
+# Universal Wellpad Controller (UWC) 
 
 ```
 * Copyright (c) 2021 Intel Corporation.
@@ -23,17 +23,20 @@
 ```
 
 # Contents:
-1. [Directory details](#directory-details)
-2. [Install generic pre-requisites](#install-generic-pre-requisites)
-3. [Install UWC specific pre-requisites](#install-UWC-specific-pre-requisites)
-4. [Provision EII and UWC services](#Provision-EII-and-UWC-services)
-5. [Build and Run all EII and UWC services](#build-and-run-all-eii-and-uwc-services)
-6. [Verify container status](#verify-container-status)
-7. [Apply configuration changes](#apply-configuration-changes)
-8. [Uninstallation script](#uninstallation-script)
-9. [Unit Tests](#unit-tests)
-10. [Debugging steps](#debugging-steps) 
-11. [Troubleshooting](#troubleshooting)
+- [Universal Wellpad Controller (UWC)](#universal-wellpad-controller-uwc)
+- [Contents:](#contents)
+  - [Directory details](#directory-details)
+  - [Install generic pre-requisites](#install-generic-pre-requisites)
+  - [Install UWC specific pre-requisites](#install-uwc-specific-pre-requisites)
+  - [Provision EII and UWC services](#provision-eii-and-uwc-services)
+  - [Build and Run all EII and UWC services](#build-and-run-all-eii-and-uwc-services)
+  - [Verify container status](#verify-container-status)
+  - [Apply configuration changes](#apply-configuration-changes)
+  - [Uninstallation script](#uninstallation-script)
+  - [Unit Tests](#unit-tests)
+  - [Debugging steps](#debugging-steps)
+  - [Notes](#notes)
+  - [Troubleshooting](#troubleshooting)
 
 ## Directory details
 The directory comprises of following:

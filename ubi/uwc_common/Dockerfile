@@ -18,16 +18,18 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-ARG EII_VERSION
-FROM ia_eiibase:$EII_VERSION as eiibase
+FROM registry.access.redhat.com/ubi8:latest
 LABEL description="Common library container"
-ARG EII_UID
 
-FROM ia_common:$EII_VERSION as common
+RUN yum install -y cmake git make gcc wget openssl-devel.x86_64  gcc-c++ python39 \ 
+    && yum clean all \
+    && rm -rf /var/cache/yum
+
+#FROM ia_common:latest as common
 
 # build openssl library
-FROM ia_common:$EII_VERSION as openssl-build
-ARG OPENSSL_DIR=openssl
+#FROM ia_common:latest as openssl-build
+ARG OPENSSL_DIR=/tmp/openssl
 
 RUN mkdir -p ${OPENSSL_DIR} \
     && cd ${OPENSSL_DIR} \
@@ -38,10 +40,10 @@ RUN mkdir -p ${OPENSSL_DIR} \
     && make install_sw -s 
 
 # Build Paho C Library
-FROM eiibase as build-pahoc
+#FROM eiibase as build-pahoc
 RUN mkdir -p /usr/paho-c
 
-COPY --from=openssl-build /usr/ssl /usr/local
+#RUN cp -r /usr/ssl /usr/local
 RUN git clone --branch develop https://github.com/eclipse/paho.mqtt.c.git \
     &&	cd paho.mqtt.c && git reset --hard ecbdce240558bc185944f54c5ef7c3cca9efb8fb \
     &&	mkdir build && cd build \
@@ -52,9 +54,9 @@ RUN git clone --branch develop https://github.com/eclipse/paho.mqtt.c.git \
     &&	make install
 
 #Build Paho CPP Library
-FROM ia_common:$EII_VERSION
-COPY --from=build-pahoc /usr/paho-c /usr/.
-COPY --from=openssl-build /usr/ssl /usr/ssl
+#FROM ia_common:$EII_VERSION
+# RUN cp -r /usr/paho-c /usr/.
+# RUN cp -r /usr/ssl /usr/ssl
 
 RUN wget https://github.com/eclipse/paho.mqtt.cpp/blob/f3a2a52259b5463ab50eee6d1c033cba18d6e84b/src/token.cpp?raw=true -P /tmp/ \
     && wget https://github.com/eclipse/paho.mqtt.cpp/blob/f3a2a52259b5463ab50eee6d1c033cba18d6e84b/src/async_client.cpp?raw=true -P /tmp/ \
@@ -69,7 +71,7 @@ RUN git clone --branch v1.1 https://github.com/eclipse/paho.mqtt.cpp.git \
     && rm paho.mqtt.cpp/src/token.cpp && cp /tmp/token.cpp paho.mqtt.cpp/src/ \       
     && cd paho.mqtt.cpp \
     && mkdir build && cd build \
-    && cmake -DPAHO_WITH_SSL=TRUE -DPAHO_MQTT_C_PATH=/usr/paho-c \
+    && cmake -DPAHO_WITH_SSL=TRUE -DPAHO_MQTT_C_PATH=/usr/paho-c -DCMAKE_PREFIX_PATH=/usr/paho-c\
     -DCMAKE_INSTALL_PREFIX=/usr/paho-cpp -DOPENSSL_ROOT_DIR=/usr/ssl -DPAHO_BUILD_SAMPLES:BOOL=OFF \
     -DBUILD_TESTS=OFF  -DPAHO_BUILD_SHARED:BOOL=ON .. \
     && make -s \
@@ -95,20 +97,33 @@ RUN git clone --branch yaml-cpp-0.6.3 https://github.com/jbeder/yaml-cpp.git \
     &&  cp -r ../include /usr/yaml \
     && cd ../../
 
-COPY uwc_util /uwc_util/.
+RUN wget https://github.com/google/googletest/archive/release-1.8.0.tar.gz \
+    && tar xzf release-1.8.0.tar.gz \
+    && cd googletest-release-1.8.0 \
+    && mkdir build \
+    && cd build \
+    && cmake .. \
+    && make -j \
+    && cp -r ../googletest/include /usr/local/include \
+    && cp -r ./googlemock/gtest/libgtest*.a /usr/local/lib/ \
+    && cp -r ./googlemock/libgmock*.a /usr/local/lib/ \
+    && pip3 install gcovr
 
-RUN	cp -r /usr/yaml/include/* /uwc_util/include/yaml-cpp/ \
-    && mkdir -p /uwc_util/lib \
+#RUN cp -r uwc_util /uwc_util/.
+
+RUN	mkdir -p /uwc_util/lib/ \ 
+    && mkdir -p /uwc_util/include/yaml-cpp \
+    && cp -r /usr/yaml/include/* /uwc_util/include/yaml-cpp/ \
     && cp -r /usr/yaml/lib/* /uwc_util/lib/ \
     && cp -r /EII/log4cpp/build/include/* /uwc_util/include/ \
     && cp -r /EII/log4cpp/build/lib/* /uwc_util/lib/ \
     && cp -r /usr/paho-cpp/include/mqtt /usr/local/include/mqtt \
     && cp -r /usr/ssl/lib/* /usr/local/lib/ \
     && cp -r /usr/ssl/include/* /usr/local/include/ \
-    && cp -r /usr/paho-cpp/lib/lib* /uwc_util/lib/ \
-    && cp -r /usr/lib/libpaho* /uwc_util/lib/
+    && cp -r /usr/paho-cpp/lib/* /uwc_util/lib/ \
+    #    && cp -r /usr/lib/libpaho* /uwc_util/lib/
 
-# compile wuc-lib sources
-RUN cd /uwc_util/Release \
-    &&	export LD_LIBRARY_PATH='/uwc_util/lib' \
+    # compile wuc-lib sources
+    #RUN cd /uwc_util/Release \
+    RUN	export LD_LIBRARY_PATH='/uwc_util/lib' \
     &&	make clean all -s
