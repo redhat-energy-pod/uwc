@@ -30,13 +30,16 @@ INFO=$(tput setaf 3)   # YELLOW (used for informative messages)
 # ----------------------------
 # Create eiiuser
 # ----------------------------
-getent passwd $1 > /dev/null 2&>1
-if [ $? -eq 0 ]; then
-    echo "${GREEN} eiiuser already exists"
-else
-    echo "${Red} eiiuser does not exist creating now, you will be prompted for your password"
-	sudo useradd eiiuser
-fi
+create_eiiuser()
+{
+    getent passwd $1 > /dev/null 2&>1
+    if [ $? -eq 0 ]; then
+        echo "${GREEN} eiiuser already exists"
+    else
+        echo "${RED} eiiuser does not exist creating now, you will be prompted for your password"
+        useradd eiiuser
+    fi
+}
 
 # ----------------------------
 # Creating docker volume dir to store yaml files
