@@ -28,51 +28,62 @@ BOLD=$(tput bold)
 INFO=$(tput setaf 3)   # YELLOW (used for informative messages)
 
 # ----------------------------
+# Create eiiuser
+# ----------------------------
+getent passwd $1 > /dev/null 2&>1
+if [ $? -eq 0 ]; then
+    echo "${GREEN} eiiuser already exists"
+else
+    echo "${Red} eiiuser does not exist creating now, you will be prompted for your password"
+	sudo useradd eiiuser
+fi
+
+# ----------------------------
 # Creating docker volume dir to store yaml files
 # ----------------------------
 create_docker_volume_dir()
 {
-    if [ ! -d /opt/intel/eii/uwc_data ]; then
-    	echo "${GREEN}uwc_data directory is not present in /opt/intel/eii/ directory.${NC}"
-    	echo "${GREEN}Creating /opt/intel/eii/uwc_data directory.${NC}"
-    	mkdir -p /opt/intel/eii/uwc_data
+    if [ ! -d /home/eiiuser/eii/uwc_data ]; then
+    	echo "${GREEN}uwc_data directory is not present in /home/eiiuser/eii/ directory.${NC}"
+    	echo "${GREEN}Creating /home/eiiuser/eii/uwc_data directory.${NC}"
+    	mkdir -p /home/eiiuser/eii/uwc_data
 		if [ "$?" -eq "0" ]; then
-			echo "${GREEN}/opt/intel/eii/uwc_data is sucessfully created. ${NC}"
+			echo "${GREEN}/home/eiiuser/eii/uwc_data is sucessfully created. ${NC}"
 		else
         	echo "${RED}Failed to create docker volume directory${NC}"
 			exit 1;
 		fi
 	
-		rm -rf /opt/intel/eii/uwc_data/sparkplug-bridge
-    	mkdir -p /opt/intel/eii/uwc_data/sparkplug-bridge
+		rm -rf /home/eiiuser/eii/uwc_data/sparkplug-bridge
+    	mkdir -p /home/eiiuser/eii/uwc_data/sparkplug-bridge
 		if [ "$?" -eq "0" ]; then
-			echo "${GREEN}/opt/intel/eii/uwc_data/sparkplug-bridge is sucessfully created. ${NC}"
+			echo "${GREEN}/home/eiiuser/eii/uwc_data/sparkplug-bridge is sucessfully created. ${NC}"
 		else
         	echo "${RED}Failed to create docker volume directory${NC}"
 			exit 1;
 		fi
     fi
-	echo "${GREEN}Deleting old /opt/intel/eii/container_logs directory.${NC}"
-	rm -rf  /opt/intel/eii/container_logs
+	echo "${GREEN}Deleting old /home/eiiuser/eii/container_logs directory.${NC}"
+	rm -rf  /home/eiiuser/eii/container_logs
 	echo "${GREEN}Done..${NC}"
-	echo "${GREEN}Creating /opt/intel/eii/container_logs directory.${NC}"
-	mkdir -p /opt/intel/eii/container_logs/modbus-tcp-master
-	mkdir -p /opt/intel/eii/container_logs/modbus-rtu-master
-	mkdir -p /opt/intel/eii/container_logs/mqtt-bridge
-	mkdir -p /opt/intel/eii/container_logs/sparkplug-bridge
-    mkdir -p /opt/intel/eii/container_logs/kpi-tactic
+	echo "${GREEN}Creating /home/eiiuser/eii/container_logs directory.${NC}"
+	mkdir -p /home/eiiuser/eii/container_logs/modbus-tcp-master
+	mkdir -p /home/eiiuser/eii/container_logs/modbus-rtu-master
+	mkdir -p /home/eiiuser/eii/container_logs/mqtt-bridge
+	mkdir -p /home/eiiuser/eii/container_logs/sparkplug-bridge
+    mkdir -p /home/eiiuser/eii/container_logs/kpi-tactic
 	if [ "$?" -eq "0" ]; then
-		echo "${GREEN}/opt/intel/eii/container_logs is sucessfully created. ${NC}"
+		echo "${GREEN}/home/eiiuser/eii/container_logs is sucessfully created. ${NC}"
 	else
 		echo "${RED}Failed to create docker volume directory${NC}"
 		exit 1;
 	fi
-    if [ ! -d /opt/intel/eii/uwc_data/common_config ]; then
-    	echo "${GREEN}common_config directory is not present in /opt/intel/eii/ directory.${NC}"
-    	echo "${GREEN}Creating /opt/intel/eii/uwc_data/common_config directory.${NC}"
-    	mkdir -p /opt/intel/eii/uwc_data/common_config
+    if [ ! -d /home/eiiuser/eii/uwc_data/common_config ]; then
+    	echo "${GREEN}common_config directory is not present in /home/eiiuser/eii/ directory.${NC}"
+    	echo "${GREEN}Creating /home/eiiuser/eii/uwc_data/common_config directory.${NC}"
+    	mkdir -p /home/eiiuser/eii/uwc_data/common_config
 		if [ "$?" -eq "0" ]; then
-			echo "${GREEN}/opt/intel/eii/uwc_data/common_config is sucessfully created. ${NC}"
+			echo "${GREEN}/home/eiiuser/eii/uwc_data/common_config is sucessfully created. ${NC}"
 		else
         	echo "${RED}Failed to create docker volume directory${NC}"
 			exit 1;
@@ -81,14 +92,14 @@ create_docker_volume_dir()
 }
 
 # -------------------------------------------
-# Coping UWC configurations to /opt/intel/eii/ 
+# Coping UWC configurations to /home/eiiuser/eii/ 
 # -------------------------------------------
 
 add_UWC_containers_In_EII()
 {
     echo "${INFO}Copying UWC Containers in EII...${NC}"   
-    cp -r ../Others/Config/UWC/Device_Config/* /opt/intel/eii/uwc_data
-    cp ../Others/Config/UWC/Global_Config.yml /opt/intel/eii/uwc_data/common_config/Global_Config.yml
+    cp -r ../Others/Config/UWC/Device_Config/* /home/eiiuser/eii/uwc_data
+    cp ../Others/Config/UWC/Global_Config.yml /home/eiiuser/eii/uwc_data/common_config/Global_Config.yml
     copy_verification=$(echo $?)
     if [ "$copy_verification" -eq "0" ]; then
         echo "${GREEN}UWC containers are successfully copied ${NC}"
